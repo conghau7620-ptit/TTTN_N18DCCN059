@@ -15,17 +15,7 @@ public class OrderDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "Order")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Order order;
-
-    @ManyToOne
-    @JoinColumn(name = "Order")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Product product;
-
+    private Integer orderId;
+    private Integer productId;
     private int quantity;
 }

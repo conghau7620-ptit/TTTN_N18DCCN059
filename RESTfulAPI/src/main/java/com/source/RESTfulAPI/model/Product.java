@@ -21,38 +21,7 @@ public class Product {
     private int price;
     private int quantity;
     private int rated;
-
-    @ManyToOne
-    @JoinColumn(name = "Type")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Type type;
-
-    @ManyToOne
-    @JoinColumn(name = "Brand")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Brand brand;
-
+    private Integer typeId;
+    private Integer brandId;
     private int discount;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private List<Image> images;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private List<Cart> carts;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private List<OrderDetails> orderDetails;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private List<Feedback> feedbacks;
 }

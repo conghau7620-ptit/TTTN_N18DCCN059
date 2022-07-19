@@ -17,9 +17,4 @@ public class Role {
     private Integer id;
 
     private String name;
-
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private List<User> users;
 }

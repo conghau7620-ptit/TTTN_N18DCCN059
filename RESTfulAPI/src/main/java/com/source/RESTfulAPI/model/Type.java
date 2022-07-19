@@ -17,9 +17,4 @@ public class Type {
     private Integer id;
 
     private String name;
-
-    @OneToMany(mappedBy = "type", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private List<Product> products;
 }

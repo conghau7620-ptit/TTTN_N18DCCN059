@@ -1,31 +1,37 @@
 package com.source.RESTfulAPI.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "Order")
-public class Order {
+@Table(name = "Users")
+public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    private String username;
+    private String password;
+    private String name;
+    private String address;
+    private String email;
+    private String phone;
+    private Integer avatarId;
 
     @Temporal(TemporalType.DATE)
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private Date createdDate;
 
-    private Integer customerId;
-    private String orderPhone;
-    private String orderAddress;
-    private int status;
-    private Integer staffId;
-    private String note;
+    private Integer roleId;
+    private Boolean status;
 }
