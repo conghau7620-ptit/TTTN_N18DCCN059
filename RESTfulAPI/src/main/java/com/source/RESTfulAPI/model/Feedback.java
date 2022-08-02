@@ -19,6 +19,5 @@ public class Feedback {
     private Integer productId;
     private Integer orderId;
     private String detail;
-    private int vote;
 
 }

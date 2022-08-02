@@ -17,5 +17,5 @@ public class OrderDetails {
 
     private Integer orderId;
     private Integer productId;
-    private int quantity;
+    private Integer quantity;
 }

@@ -33,5 +33,6 @@ public class Users {
     private Date createdDate;
 
     private Integer roleId;
-    private Boolean status;
+    private Boolean active;
+
 }

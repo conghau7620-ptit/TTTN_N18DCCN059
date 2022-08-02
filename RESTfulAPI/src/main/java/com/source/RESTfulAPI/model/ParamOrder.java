@@ -2,17 +2,14 @@ package com.source.RESTfulAPI.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
-@Setter
-@Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class ResponseData {
-    int status;
-    String message;
-    List<Object> data;
+@Getter
+@Setter
+public class ParamOrder {
+    private Orders orders;
+    private List<OrderDetails> orderDetails;
 }

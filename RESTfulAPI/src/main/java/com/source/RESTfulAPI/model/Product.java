@@ -18,10 +18,10 @@ public class Product {
 
     private String name;
     private String description;
-    private int price;
-    private int quantity;
-    private int rated;
+    private Integer price;
+    private Integer quantity;
     private Integer typeId;
     private Integer brandId;
-    private int discount;
+    private Integer discount;
+    private Boolean active;
 }

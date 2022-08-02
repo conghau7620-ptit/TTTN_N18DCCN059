@@ -1,19 +1,21 @@
 package com.source.RESTfulAPI.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "Order")
-public class Order {
+@Table(name = "Orders")
+public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -25,7 +27,7 @@ public class Order {
     private Integer customerId;
     private String orderPhone;
     private String orderAddress;
-    private int status;
+    private Integer status;
     private Integer staffId;
     private String note;
 }

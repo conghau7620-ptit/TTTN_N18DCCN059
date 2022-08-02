@@ -1,71 +1,155 @@
 package com.source.RESTfulAPI.controller;
 
-import com.source.RESTfulAPI.model.ResponseData;
+import com.source.RESTfulAPI.exception.ApiRequestException;
 import com.source.RESTfulAPI.model.Users;
 import com.source.RESTfulAPI.repository.ImageRepository;
+import com.source.RESTfulAPI.repository.RoleRepository;
 import com.source.RESTfulAPI.repository.UserRepository;
 import com.source.RESTfulAPI.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
-@CrossOrigin("*")
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/user")
 public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
     private ImageRepository imageRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+//    @Autowired
+//    private PasswordEncoder passwordEncoder;
 
-    @GetMapping("/user")
-    @ResponseBody
-    public ResponseData getAllUser(){
-        return new ResponseData(200,"Thành công", Collections.singletonList(userRepository.findAll()));
-    }
+    public List<Users> getListUserByPage(List<Users> users, Integer page){
 
-    @GetMapping("/user/{id}")
-    @ResponseBody
-    public ResponseData getUserByUsername(@PathVariable Integer id){
-        Users user = userRepository.findById(id).orElse(null);
-        if (user!=null) {
-            List<Object> data = new ArrayList<>();
-            data.add(user);
-            return new ResponseData(200,"Thành công", data);
+        int start = 10 * (page - 1);
+        int end = (10 * page) > users.size() ? users.size(): 10 * page;
+        List<Users> data = new ArrayList<>();
+        for (int i = start; i < end; i++) {
+            data.add(users.get(i));
         }
-        return new ResponseData(400,"Id không tồn tại", null);
+
+        return data;
     }
 
-    @PostMapping("/user")
-    public ResponseData createUser(@RequestBody Users user){
-        user.setCreatedDate(new Date());
+    @GetMapping
+    @ResponseBody
+    public ResponseEntity<List<Users>> getAllUser(@RequestParam Integer page) {
+        List<Users> users = userRepository.findAll();
+        List<Users> data = getListUserByPage(users, page);
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("{id}")
+    @ResponseBody
+    public ResponseEntity<Users> getUserByUsername(@PathVariable Integer id) {
+        Users user = userRepository.findById(id).orElse(null);
+        if (user == null) throw new ApiRequestException("Id user không tồn tại");
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/customer")
+    public ResponseEntity<List<Users>> getAllCustomer(@RequestParam Integer page){
+        List<Users> users = userRepository.findByRoleId(3);
+        List<Users> data = getListUserByPage(users, page);
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/staff")
+    public ResponseEntity<List<Users>> getAllStaffAdmin(@RequestParam Integer page){
+        List<Users> users = userRepository.findAll();
+        List<Users> staff = new ArrayList<>();
+        for (Users u : users){
+            if (u.getRoleId()!=3) staff.add(u);
+        }
+        List<Users> data = getListUserByPage(staff, page);
+        return ResponseEntity.ok(staff);
+    }
+
+
+    public ResponseEntity checkValidField(Users user){
+        if (user.getUsername()==null || user.getUsername().isEmpty()){
+            throw new ApiRequestException("Username không được để trống");
+        }
+
+        if (user.getPassword()==null || user.getPassword().isEmpty()){
+            throw new ApiRequestException("Password không được để trống");
+        }
+
+        if (user.getName()==null || user.getName().isEmpty()){
+            throw new ApiRequestException("Tên không được để trống");
+        }
+
+        if (user.getPhone()==null || user.getPhone().isEmpty()){
+            throw new ApiRequestException("Số điện thoại không được để trống");
+        }
+
+        if (user.getRoleId()==null){
+            throw new ApiRequestException("Chức danh không được để trống");
+        }
+
+        if (user.getActive()==null){
+            throw new ApiRequestException("Trạng thái hoạt động không được để trống");
+        }
 
         if (userRepository.existsByUsername(user.getUsername())) {
-            return new ResponseData(400,"Username đã tồn tại", null);
+            throw new ApiRequestException("Username đã tồn tại");
         }
 
-        if (!Validation.isValidUsername(user.getUsername())){
-            return new ResponseData(400, "Username không hợp lệ", null);
+        if (!Validation.isValidUsername(user.getUsername())) {
+            throw new ApiRequestException("Username không hợp lệ");
         }
 
         if (!Validation.isValidPhoneNumber(user.getPhone())) {
-            return new ResponseData(400, "Số điện thoại không hợp lệ", null);
+            throw new ApiRequestException("Số điện thoại không hợp lệ");
         }
-
-        userRepository.save(user);
-        return new ResponseData(200,"Thêm thành công", null);
+        return null;
     }
 
-//    @PutMapping("/user")
-//    public ResponseEntity<Users> updateUser(@RequestBody Users user){
-//        Users userTmp = userRepository.findById(user.getId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Không tồn tại user với id: " + user.getId()));
-//        userTmp.setPassword(user.getPassword());
-//        userTmp.setName(user.getName());
-//        userTmp.setAddress(user.getAddress());
-//        userTmp.setEmail(user.getEmail());
-//        userTmp.setPhone(user.getPhone());
-//        userTmp.setImage();
-//    }
+    @PostMapping
+    public ResponseEntity<Users> createUser(@RequestBody Users user) {
+
+        user.setCreatedDate(new Date());
+        user.setActive(true);
+
+        checkValidField(user);
+
+//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping
+    public ResponseEntity<Users> updateUser(@RequestBody Users user) {
+
+        if (userRepository.findById(user.getId()).orElse(null)==null)
+            throw new ApiRequestException("Id không tồn tại");
+
+        checkValidField(user);
+
+//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        userRepository.save(user);
+        return ResponseEntity.ok(user);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Integer id) {
+        Users user = userRepository.findById(id).orElse(null);
+        if (user == null) throw new ApiRequestException("Id không tồn tại");
+
+        userRepository.delete(user);
+
+        return ResponseEntity.ok( "Xóa thành công");
+    }
 }
+

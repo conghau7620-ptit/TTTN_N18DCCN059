@@ -1,9 +1,6 @@
 package com.source.RESTfulAPI.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -12,6 +9,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Data
 @Table(name = "Image")
 public class Image {
     @Id
@@ -21,4 +19,11 @@ public class Image {
     private String url;
     private String typeImage;
     private int relationId;
+
+    public Image(String url, String typeImage, Integer relationId) {
+        this.url = url;
+        this.typeImage = typeImage;
+        this.relationId = relationId;
+
+    }
 }
