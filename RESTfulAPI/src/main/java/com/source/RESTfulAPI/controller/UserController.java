@@ -8,6 +8,7 @@ import com.source.RESTfulAPI.repository.UserRepository;
 import com.source.RESTfulAPI.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -24,8 +25,8 @@ public class UserController {
     private ImageRepository imageRepository;
     @Autowired
     private RoleRepository roleRepository;
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<Users> getListUserByPage(List<Users> users, Integer page){
 
@@ -41,10 +42,10 @@ public class UserController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<List<Users>> getAllUser(@RequestParam Integer page) {
+    public ResponseEntity<List<Users>> getAllUser() {
         List<Users> users = userRepository.findAll();
-        List<Users> data = getListUserByPage(users, page);
-        return ResponseEntity.ok(data);
+//        List<Users> data = getListUserByPage(users, page);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("{id}")
@@ -92,15 +93,11 @@ public class UserController {
         }
 
         if (user.getRoleId()==null){
-            throw new ApiRequestException("Chức danh không được để trống");
+            throw new ApiRequestException("Vai trò không được để trống");
         }
 
         if (user.getActive()==null){
             throw new ApiRequestException("Trạng thái hoạt động không được để trống");
-        }
-
-        if (userRepository.existsByUsername(user.getUsername())) {
-            throw new ApiRequestException("Username đã tồn tại");
         }
 
         if (!Validation.isValidUsername(user.getUsername())) {
@@ -121,7 +118,11 @@ public class UserController {
 
         checkValidField(user);
 
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new ApiRequestException("Username đã tồn tại");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepository.save(user);
 
@@ -136,7 +137,7 @@ public class UserController {
 
         checkValidField(user);
 
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepository.save(user);
         return ResponseEntity.ok(user);

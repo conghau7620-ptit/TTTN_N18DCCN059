@@ -3,6 +3,7 @@ package com.source.RESTfulAPI.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.List;
 
 @Setter
@@ -17,4 +18,9 @@ public class Role {
     private Integer id;
 
     private String name;
+
+//    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+//    @EqualsAndHashCode.Exclude
+//    @ToString.Exclude
+//    private Collection<Users> users;
 }

@@ -41,10 +41,10 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProduct(@RequestParam Integer page) {
+    public ResponseEntity<List<Product>> getAllProduct() {
         List<Product> products = productRepository.findAll();
-        List<Product> data = getListProductByPage(products, page);
-        return ResponseEntity.ok(data);
+//        List<Product> data = getListProductByPage(products, page);
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("{id}")

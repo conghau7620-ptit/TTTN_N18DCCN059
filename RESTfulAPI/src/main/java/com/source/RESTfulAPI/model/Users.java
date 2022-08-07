@@ -1,9 +1,7 @@
 package com.source.RESTfulAPI.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -35,4 +33,10 @@ public class Users {
     private Integer roleId;
     private Boolean active;
 
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    @JoinColumn(name = "roleId")
+//    @EqualsAndHashCode.Exclude
+//    @ToString.Exclude
+//    private Role role;
 }
