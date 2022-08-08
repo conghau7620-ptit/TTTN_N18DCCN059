@@ -168,19 +168,7 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<Users> updateUser(@RequestParam Map<String, String> userParam) throws ParseException {
-
-        Users user = new Users();
-        user.setId(Integer.parseInt(userParam.get("id")));
-        user.setUsername(userParam.get("username"));
-        user.setPassword(userParam.get("password"));
-        user.setName(userParam.get("name"));
-        user.setAddress(userParam.get("address"));
-        user.setEmail(userParam.get("email"));
-        user.setPhone(userParam.get("phone"));
-        user.setCreatedDate(new SimpleDateFormat("dd/MM/yyyy").parse(userParam.get("createdDate")));
-        user.setRoleId(Integer.parseInt(userParam.get("roleId")));
-        user.setActive(Boolean.parseBoolean(userParam.get("active")));
+    public ResponseEntity<Users> updateUser(@RequestBody Users user) throws ParseException {
 
         if (userRepository.findById(user.getId()).orElse(null)==null)
             throw new ApiRequestException("Id không tồn tại");
