@@ -41,13 +41,14 @@ public class UserController {
     @Autowired
     ServletContext context;
 
-    public List<Users> getListUserByPage(List<Users> users, Integer page){
+    public List<UserResponse> getListUserByPage(List<Users> users, Integer page){
 
         int start = 10 * (page - 1);
         int end = (10 * page) > users.size() ? users.size(): 10 * page;
-        List<Users> data = new ArrayList<>();
+        List<UserResponse> data = new ArrayList<>();
         for (int i = start; i < end; i++) {
-            data.add(users.get(i));
+            Image image = imageRepository.findByUserId(users.get(i).getId());
+            data.add(new UserResponse(users.get(i),image==null?null:image.getUrl()));
         }
 
         return data;
@@ -55,9 +56,9 @@ public class UserController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<List<Users>> getAllUser(@RequestParam Integer page) {
+    public ResponseEntity<List<UserResponse>> getAllUser(@RequestParam Integer page) {
         List<Users> users = userRepository.findAll();
-        List<Users> data = getListUserByPage(users, page);
+        List<UserResponse> data = getListUserByPage(users, page);
         return ResponseEntity.ok(data);
     }
 
@@ -67,29 +68,29 @@ public class UserController {
         Users user = userRepository.findById(id).orElse(null);
         if (user == null) throw new ApiRequestException("Id user không tồn tại");
 
-        Image userImage = imageRepository.getByUserId(user.getId());
+        Image userImage = imageRepository.findByUserId(user.getId());
 
-        UserResponse userResponse = new UserResponse(user, userImage.getUrl());
+        UserResponse userResponse = new UserResponse(user, userImage==null?null: userImage.getUrl());
 
         return ResponseEntity.ok(userResponse);
     }
 
     @GetMapping("/customer")
-    public ResponseEntity<List<Users>> getAllCustomer(@RequestParam Integer page){
+    public ResponseEntity<List<UserResponse>> getAllCustomer(@RequestParam Integer page){
         List<Users> users = userRepository.findByRoleId(3);
-        List<Users> data = getListUserByPage(users, page);
-        return ResponseEntity.ok(users);
+        List<UserResponse> data = getListUserByPage(users, page);
+        return ResponseEntity.ok(data);
     }
 
     @GetMapping("/staff")
-    public ResponseEntity<List<Users>> getAllStaffAdmin(@RequestParam Integer page){
+    public ResponseEntity<List<UserResponse>> getAllStaffAdmin(@RequestParam Integer page){
         List<Users> users = userRepository.findAll();
         List<Users> staff = new ArrayList<>();
         for (Users u : users){
             if (u.getRoleId()!=3) staff.add(u);
         }
-        List<Users> data = getListUserByPage(staff, page);
-        return ResponseEntity.ok(staff);
+        List<UserResponse> data = getListUserByPage(staff, page);
+        return ResponseEntity.ok(data);
     }
 
 
@@ -167,8 +168,7 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<Users> updateUser(@RequestParam(value = "file", required = false) MultipartFile file,
-                                            @RequestParam Map<String, String> userParam) throws ParseException {
+    public ResponseEntity<Users> updateUser(@RequestParam Map<String, String> userParam) throws ParseException {
 
         Users user = new Users();
         user.setId(Integer.parseInt(userParam.get("id")));
@@ -186,8 +186,6 @@ public class UserController {
             throw new ApiRequestException("Id không tồn tại");
 
         checkValidField(user);
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepository.save(user);
         return ResponseEntity.ok(user);
