@@ -19,8 +19,4 @@ public class Role {
 
     private String name;
 
-//    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-//    @EqualsAndHashCode.Exclude
-//    @ToString.Exclude
-//    private Collection<Users> users;
 }

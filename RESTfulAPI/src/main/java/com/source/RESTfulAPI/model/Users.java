@@ -24,7 +24,6 @@ public class Users {
     private String address;
     private String email;
     private String phone;
-    private Integer avatarId;
 
     @Temporal(TemporalType.DATE)
     @DateTimeFormat(pattern = "dd/MM/yyyy")
@@ -32,11 +31,4 @@ public class Users {
 
     private Integer roleId;
     private Boolean active;
-
-//    @JsonIgnore
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "roleId")
-//    @EqualsAndHashCode.Exclude
-//    @ToString.Exclude
-//    private Role role;
 }

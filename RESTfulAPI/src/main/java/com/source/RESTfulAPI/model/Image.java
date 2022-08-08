@@ -17,13 +17,8 @@ public class Image {
     private Integer id;
 
     private String url;
-    private String typeImage;
-    private int relationId;
+    private Integer userId;
+    private Integer productId;
+    private Integer feedbackId;
 
-    public Image(String url, String typeImage, Integer relationId) {
-        this.url = url;
-        this.typeImage = typeImage;
-        this.relationId = relationId;
-
-    }
 }
