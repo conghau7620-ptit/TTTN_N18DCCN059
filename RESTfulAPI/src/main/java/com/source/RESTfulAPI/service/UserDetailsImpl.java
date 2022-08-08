@@ -17,7 +17,9 @@ import java.util.Objects;
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
+    private Integer id;
     private String username;
+
 
     @JsonIgnore
     private String password;
@@ -27,8 +29,9 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String username,String password,
+    public UserDetailsImpl(Integer id, String username, String password,
                            Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
         this.username = username;
         this.password = password;
         this.authorities = authorities;
@@ -39,6 +42,7 @@ public class UserDetailsImpl implements UserDetails {
 //        Role role = roleRepository.getById(user.getRoleId());
         authorities.add(new SimpleGrantedAuthority(role.getName()));
         return new UserDetailsImpl(
+                user.getId(),
                 user.getUsername(),
                 user.getPassword(),
                 authorities);
@@ -48,6 +52,11 @@ public class UserDetailsImpl implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
+
+    public Integer getId() {
+        return id;
+    }
+
     @Override
     public String getPassword() {
         return password;
