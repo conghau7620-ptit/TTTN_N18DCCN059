@@ -29,6 +29,7 @@ public class JwtUtils {
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date((new Date(System.currentTimeMillis())).getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .claim("id", userPrincipal.getId())
                 .compact();
     }
 
