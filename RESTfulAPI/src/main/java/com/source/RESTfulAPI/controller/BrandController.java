@@ -32,7 +32,7 @@ public class BrandController {
             data.add(brands.get(i));
         }
 
-        return new ListBrandResponse(data, data.size()%10==0 ? data.size()/10 : data.size()/10+1);
+        return new ListBrandResponse(data, brands.size()%10==0 ? brands.size()/10 : brands.size()/10+1);
     }
 
     @GetMapping

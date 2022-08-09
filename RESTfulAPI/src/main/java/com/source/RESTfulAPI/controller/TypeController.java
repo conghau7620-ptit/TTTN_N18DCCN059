@@ -33,7 +33,7 @@ public class TypeController {
             data.add(types.get(i));
         }
 
-        return new ListTypeResponse(data, data.size()%10==0 ? data.size()/10 : data.size()/10+1);
+        return new ListTypeResponse(data, types.size()%10==0 ? types.size()/10 : types.size()/10+1);
     }
 
     @GetMapping
