@@ -41,26 +41,35 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    ServletContext context;
+    private ServletContext context;
 
-    public ListUserResponse getListUserByPage(List<Users> users, Integer page){
+//    public ListUserResponse getListUserByPage(List<Users> users, Integer page){
+//
+//        int start = 10 * (page - 1);
+//        int end = (10 * page) > users.size() ? users.size(): 10 * page;
+//        List<UserResponse> data = new ArrayList<>();
+//        for (int i = start; i < end; i++) {
+//            Image image = imageRepository.findByUserId(users.get(i).getId());
+//            data.add(new UserResponse(users.get(i),image==null?null:image.getUrl()));
+//        }
+//
+//        return new ListUserResponse(data, users.size()%10==0 ? users.size()/10 : users.size()/10+1);
+//    }
 
-        int start = 10 * (page - 1);
-        int end = (10 * page) > users.size() ? users.size(): 10 * page;
+    public ListUserResponse addImageToListUser(List<Users> users){
         List<UserResponse> data = new ArrayList<>();
-        for (int i = start; i < end; i++) {
-            Image image = imageRepository.findByUserId(users.get(i).getId());
-            data.add(new UserResponse(users.get(i),image==null?null:image.getUrl()));
+        for (Users u : users){
+            Image image = imageRepository.findByUserId(u.getId());
+            data.add(new UserResponse(u, image==null ? null : image.getUrl()));
         }
-
         return new ListUserResponse(data, users.size()%10==0 ? users.size()/10 : users.size()/10+1);
     }
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<ListUserResponse> getAllUser(@RequestParam Integer page) {
+    public ResponseEntity<ListUserResponse> getAllUser() {
         List<Users> users = userRepository.findAll();
-        ListUserResponse data = getListUserByPage(users, page);
+        ListUserResponse data = addImageToListUser(users);
         return ResponseEntity.ok(data);
     }
 
@@ -78,20 +87,20 @@ public class UserController {
     }
 
     @GetMapping("/customer")
-    public ResponseEntity<ListUserResponse> getAllCustomer(@RequestParam Integer page){
+    public ResponseEntity<ListUserResponse> getAllCustomer(){
         List<Users> users = userRepository.findByRoleId(3);
-        ListUserResponse data = getListUserByPage(users, page);
+        ListUserResponse data = addImageToListUser(users);
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("/staff")
-    public ResponseEntity<ListUserResponse> getAllStaffAdmin(@RequestParam Integer page){
+    public ResponseEntity<ListUserResponse> getAllStaffAdmin(){
         List<Users> users = userRepository.findAll();
-        List<Users> staff = new ArrayList<>();
+        List<Users> staffs = new ArrayList<>();
         for (Users u : users){
-            if (u.getRoleId()!=3) staff.add(u);
+            if (u.getRoleId()!=3) staffs.add(u);
         }
-        ListUserResponse data = getListUserByPage(staff, page);
+        ListUserResponse data = addImageToListUser(staffs);
         return ResponseEntity.ok(data);
     }
 

@@ -15,4 +15,9 @@ import java.util.List;
 public class ListTypeResponse {
     private List<Type> types;
     private Integer totalPage;
+
+    public ListTypeResponse (List<Type> types) {
+        this.types = types;
+        this.totalPage = types.size()%10==0 ? types.size()/10 : types.size()/10+1;
+    }
 }

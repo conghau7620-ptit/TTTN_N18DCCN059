@@ -15,4 +15,9 @@ import java.util.List;
 public class ListBrandResponse {
     private List<Brand> brands;
     private Integer totalPage;
+
+    public ListBrandResponse(List<Brand> brands){
+        this.brands = brands;
+        this.totalPage = brands.size()%10==0 ? brands.size()/10 : brands.size()/10+1;
+    }
 }
