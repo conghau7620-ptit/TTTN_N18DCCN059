@@ -23,29 +23,15 @@ public class BrandController {
     @Autowired
     private ProductRepository productRepository;
 
-//    public ListBrandResponse getListBrandByPage(List<Brand> brands, Integer page){
-//
-//        int start = 10 * (page - 1);
-//        int end = (10 * page) > brands.size() ? brands.size(): 10 * page;
-//        List<Brand> data = new ArrayList<>();
-//        for (int i = start; i < end; i++) {
-//            data.add(brands.get(i));
-//        }
-//
-//        return new ListBrandResponse(data, brands.size()%10==0 ? brands.size()/10 : brands.size()/10+1);
-//    }
-
     @GetMapping
     public ResponseEntity<ListBrandResponse> getListBrandByPageNumber() {
         List<Brand> brands = brandRepository.findAll();
-//        ListBrandResponse data = getListBrandByPage(brands, page);
         return ResponseEntity.ok(new ListBrandResponse(brands));
     }
 
     @GetMapping("/active")
     public ResponseEntity<ListBrandResponse> getActiveBrand() {
         List<Brand> brands = brandRepository.findByActive(true);
-//        ListBrandResponse data = getListBrandByPage(brands, page);
         return ResponseEntity.ok(new ListBrandResponse(brands));
     }
 

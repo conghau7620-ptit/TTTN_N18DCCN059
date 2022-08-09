@@ -43,26 +43,13 @@ public class UserController {
     @Autowired
     private ServletContext context;
 
-//    public ListUserResponse getListUserByPage(List<Users> users, Integer page){
-//
-//        int start = 10 * (page - 1);
-//        int end = (10 * page) > users.size() ? users.size(): 10 * page;
-//        List<UserResponse> data = new ArrayList<>();
-//        for (int i = start; i < end; i++) {
-//            Image image = imageRepository.findByUserId(users.get(i).getId());
-//            data.add(new UserResponse(users.get(i),image==null?null:image.getUrl()));
-//        }
-//
-//        return new ListUserResponse(data, users.size()%10==0 ? users.size()/10 : users.size()/10+1);
-//    }
-
     public ListUserResponse addImageToListUser(List<Users> users){
         List<UserResponse> data = new ArrayList<>();
         for (Users u : users){
             Image image = imageRepository.findByUserId(u.getId());
             data.add(new UserResponse(u, image==null ? null : image.getUrl()));
         }
-        return new ListUserResponse(data, users.size()%10==0 ? users.size()/10 : users.size()/10+1);
+        return new ListUserResponse(data, data.size()%10==0 ? data.size()/10 : data.size()/10+1);
     }
 
     @GetMapping
@@ -142,7 +129,7 @@ public class UserController {
 
     @Transactional
     @PostMapping
-    public ResponseEntity<Users> createUser(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<Users> createUser(@RequestParam(value = "file", required = false) MultipartFile file,
                                             @RequestParam Map<String, String> userParam) throws IOException {
         Users user = new Users();
 

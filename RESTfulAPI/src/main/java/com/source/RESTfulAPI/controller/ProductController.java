@@ -2,15 +2,23 @@ package com.source.RESTfulAPI.controller;
 
 import com.source.RESTfulAPI.exception.ApiRequestException;
 import com.source.RESTfulAPI.model.Brand;
+import com.source.RESTfulAPI.model.Image;
 import com.source.RESTfulAPI.model.Product;
 import com.source.RESTfulAPI.model.Type;
 import com.source.RESTfulAPI.repository.BrandRepository;
+import com.source.RESTfulAPI.repository.ImageRepository;
 import com.source.RESTfulAPI.repository.ProductRepository;
 import com.source.RESTfulAPI.repository.TypeRepository;
+import com.source.RESTfulAPI.response.ListProductResponse;
+import com.source.RESTfulAPI.response.ProductResponse;
+import com.source.RESTfulAPI.upload.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,54 +36,73 @@ public class ProductController {
     @Autowired
     private TypeRepository typeRepository;
 
-    public List<Product> getListProductByPage(List<Product> products, Integer page){
+    @Autowired
+    private ImageRepository imageRepository;
 
-        int start = 10 * (page - 1);
-        int end = (10 * page) > products.size() ? products.size(): 10 * page;
-        List<Product> data = new ArrayList<>();
-        for (int i = start; i < end; i++) {
-            data.add(products.get(i));
+    public ListProductResponse addImageToListProduct(List<Product> products){
+
+        List<ProductResponse> data = new ArrayList<>();
+        for (Product p : products) {
+            List<Image> images = imageRepository.findByProductId(p.getId());
+            List<String> imageUrls = new ArrayList<>();
+            if (images!=null) {
+                for (Image i : images) {
+                    imageUrls.add(i.getUrl());
+                }
+            }
+
+            String typeName = typeRepository.getById(p.getTypeId()).getName();
+            String brandName = brandRepository.getById(p.getBrandId()).getName();
+            data.add(new ProductResponse(p, imageUrls, typeName, brandName));
         }
 
-        return data;
+        return new ListProductResponse(data, data.size()%10==0 ? data.size()/10 : data.size()/10+1);
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProduct(@RequestParam Integer page) {
+    public ResponseEntity<ListProductResponse> getAllProduct() {
         List<Product> products = productRepository.findAll();
-        List<Product> data = getListProductByPage(products, page);
+        ListProductResponse data = addImageToListProduct(products);
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Integer id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Integer id) {
         Product product = productRepository.findById(id).orElse(null);
         if (product == null) throw new ApiRequestException("Id không tồn tại");
-        return ResponseEntity.ok(product);
+
+        List<Image> images = imageRepository.findByProductId(product.getId());
+        List<String> imageUrls = new ArrayList<>();
+        if (images!=null) {
+            for (Image i : images) {
+                imageUrls.add(i.getUrl());
+            }
+        }
+
+        String typeName = typeRepository.getById(product.getTypeId()).getName();
+        String brandName = brandRepository.getById(product.getBrandId()).getName();
+
+        return ResponseEntity.ok(new ProductResponse(product, imageUrls, typeName, brandName));
     }
 
     @GetMapping("/brand")
-    public ResponseEntity<List<Product>> getProductByBrandId(@RequestParam Map<String, String> param) {
-        Integer brandId = Integer.parseInt(param.get("brandId"));
-        Integer page = Integer.parseInt(param.get("page"));
+    public ResponseEntity<ListProductResponse> getProductByBrandId(@RequestParam Integer brandId) {
 
         List<Product> products = productRepository.findByBrandId(brandId);
-        List<Product> data = getListProductByPage(products, page);
+        ListProductResponse data = addImageToListProduct(products);
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("/type")
-    public ResponseEntity<List<Product>> getProductByTypeId(@RequestParam Map<String, String> param){
-        Integer typeId = Integer.parseInt(param.get("typeId"));
-        Integer page = Integer.parseInt(param.get("page"));
+    public ResponseEntity<ListProductResponse> getProductByTypeId(@RequestParam Integer typeId){
 
         List<Product> products = productRepository.findByTypeId(typeId);
-        List<Product> data = getListProductByPage(products, page);
+        ListProductResponse data = addImageToListProduct(products);
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<Product>> getActiveProduct(@RequestParam Integer page) {
+    public ResponseEntity<ListProductResponse> getActiveProduct() {
         List<Product> products = productRepository.findByActive(true);
         List<Product> activeList = new ArrayList<>();
         for (Product p : products){
@@ -86,7 +113,7 @@ public class ProductController {
             }
         }
 
-        List<Product> data = getListProductByPage(activeList, page);
+        ListProductResponse data = addImageToListProduct(activeList);
 
         return ResponseEntity.ok(data);
     }
@@ -114,14 +141,40 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-
-        checkValidField(product);
-
+    public ResponseEntity<ProductResponse> createProduct(@RequestParam(value = "files", required = false) List<MultipartFile> files,
+                                                 @RequestParam Map<String, String> productParam) throws IOException {
+        Product product = new Product();
+        product.setName(productParam.get("name"));
+        product.setDescription(productParam.get("Description"));
+        product.setPrice(Integer.parseInt(productParam.get("price")));
+        product.setQuantity(Integer.parseInt(productParam.get("quantity")));
+        product.setTypeId(Integer.parseInt(productParam.get("typeId")));
+        product.setBrandId(Integer.parseInt(productParam.get("brandId")));
+        product.setDiscount(Integer.parseInt(productParam.get("discount")));
         product.setActive(true);
-
+        checkValidField(product);
         productRepository.save(product);
-        return ResponseEntity.ok(product);
+        productRepository.flush();
+
+        //add image
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile file : files){
+            String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+            String uploadDir = "Images/Product/" + product.getId();
+            FileUploadUtil.saveFile(uploadDir, fileName, file);
+
+            Image image = new Image();
+            image.setProductId(product.getId());
+            image.setUrl("localhost:8080/api/image/product?productId=" + product.getId() + "&name="+ fileName);
+            imageRepository.save(image);
+
+            imageUrls.add(image.getUrl());
+        }
+
+        String brandName = brandRepository.getById(product.getBrandId()).getName();
+        String typeName = typeRepository.getById(product.getTypeId()).getName();
+
+        return ResponseEntity.ok(new ProductResponse(product, imageUrls, typeName, brandName));
     }
 
     @PutMapping

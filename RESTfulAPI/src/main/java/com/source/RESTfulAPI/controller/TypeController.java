@@ -24,29 +24,16 @@ public class TypeController {
     @Autowired
     private ProductRepository productRepository;
 
-//    public ListTypeResponse getListTypeByPage(List<Type> types, Integer page){
-//
-//        int start = 10 * (page - 1);
-//        int end = (10 * page) > types.size() ? types.size(): 10 * page;
-//        List<Type> data = new ArrayList<>();
-//        for (int i = start; i < end; i++) {
-//            data.add(types.get(i));
-//        }
-//
-//        return new ListTypeResponse(data, types.size()%10==0 ? types.size()/10 : types.size()/10+1);
-//    }
 
     @GetMapping
     public ResponseEntity<ListTypeResponse> getAllType() {
         List<Type> types = typeRepository.findAll();
-//        ListTypeResponse data = getListTypeByPage(types, page);
         return ResponseEntity.ok(new ListTypeResponse(types));
     }
 
     @GetMapping("/active")
     public ResponseEntity<ListTypeResponse> getActiveType() {
         List<Type> types = typeRepository.findByActive(true);
-//        ListTypeResponse data = getListTypeByPage(types, page);
         return ResponseEntity.ok(new ListTypeResponse(types));
     }
 
