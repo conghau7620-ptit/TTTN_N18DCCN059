@@ -159,7 +159,7 @@ public class UserController {
 
         Image image = new Image();
         image.setUserId(user.getId());
-        image.setUrl("localhost:8080/api/image/user?userId=" + user.getId() + "&name="+ fileName);
+        image.setUrl("http://localhost:8080/api/image/user?userId=" + user.getId() + "&name="+ fileName);
         imageRepository.save(image);
 
         return ResponseEntity.ok(user);

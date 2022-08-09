@@ -165,7 +165,7 @@ public class ProductController {
 
             Image image = new Image();
             image.setProductId(product.getId());
-            image.setUrl("localhost:8080/api/image/product?productId=" + product.getId() + "&name="+ fileName);
+            image.setUrl("http://localhost:8080/api/image/product?productId=" + product.getId() + "&name="+ fileName);
             imageRepository.save(image);
 
             imageUrls.add(image.getUrl());
