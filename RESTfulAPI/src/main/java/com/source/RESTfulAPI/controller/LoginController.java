@@ -1,5 +1,6 @@
 package com.source.RESTfulAPI.controller;
 
+import com.source.RESTfulAPI.exception.ApiRequestException;
 import com.source.RESTfulAPI.jwt.JwtResponse;
 import com.source.RESTfulAPI.jwt.JwtUtils;
 import com.source.RESTfulAPI.model.Users;
@@ -57,13 +58,14 @@ public class LoginController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
         String role = roles.get(0);
-        System.out.println(role);
 
-        Users staff = userRepository.findByUsername(username);
+        Users user = userRepository.findByUsername(username);
+
+        if (!user.getActive()) throw new ApiRequestException("Tài khoản đã bị khóa");
+
         JwtResponse jwtResponse = new JwtResponse();
-
         jwtResponse.setToken(jwt);
-        jwtResponse.setId(staff.getId());
+        jwtResponse.setId(user.getId());
         jwtResponse.setUsername(username);
         jwtResponse.setRole(role);
 

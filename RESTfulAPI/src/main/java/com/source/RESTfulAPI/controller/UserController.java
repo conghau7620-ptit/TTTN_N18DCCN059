@@ -6,6 +6,7 @@ import com.source.RESTfulAPI.model.Users;
 import com.source.RESTfulAPI.repository.ImageRepository;
 import com.source.RESTfulAPI.repository.RoleRepository;
 import com.source.RESTfulAPI.repository.UserRepository;
+import com.source.RESTfulAPI.response.ListUserResponse;
 import com.source.RESTfulAPI.response.UserResponse;
 import com.source.RESTfulAPI.upload.FileUploadUtil;
 import com.source.RESTfulAPI.validation.Validation;
@@ -26,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("api/user")
 public class UserController {
@@ -41,7 +43,7 @@ public class UserController {
     @Autowired
     ServletContext context;
 
-    public List<UserResponse> getListUserByPage(List<Users> users, Integer page){
+    public ListUserResponse getListUserByPage(List<Users> users, Integer page){
 
         int start = 10 * (page - 1);
         int end = (10 * page) > users.size() ? users.size(): 10 * page;
@@ -51,14 +53,14 @@ public class UserController {
             data.add(new UserResponse(users.get(i),image==null?null:image.getUrl()));
         }
 
-        return data;
+        return new ListUserResponse(data, data.size()%10);
     }
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<List<UserResponse>> getAllUser(@RequestParam Integer page) {
+    public ResponseEntity<ListUserResponse> getAllUser(@RequestParam Integer page) {
         List<Users> users = userRepository.findAll();
-        List<UserResponse> data = getListUserByPage(users, page);
+        ListUserResponse data = getListUserByPage(users, page);
         return ResponseEntity.ok(data);
     }
 
@@ -76,20 +78,20 @@ public class UserController {
     }
 
     @GetMapping("/customer")
-    public ResponseEntity<List<UserResponse>> getAllCustomer(@RequestParam Integer page){
+    public ResponseEntity<ListUserResponse> getAllCustomer(@RequestParam Integer page){
         List<Users> users = userRepository.findByRoleId(3);
-        List<UserResponse> data = getListUserByPage(users, page);
+        ListUserResponse data = getListUserByPage(users, page);
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("/staff")
-    public ResponseEntity<List<UserResponse>> getAllStaffAdmin(@RequestParam Integer page){
+    public ResponseEntity<ListUserResponse> getAllStaffAdmin(@RequestParam Integer page){
         List<Users> users = userRepository.findAll();
         List<Users> staff = new ArrayList<>();
         for (Users u : users){
             if (u.getRoleId()!=3) staff.add(u);
         }
-        List<UserResponse> data = getListUserByPage(staff, page);
+        ListUserResponse data = getListUserByPage(staff, page);
         return ResponseEntity.ok(data);
     }
 
