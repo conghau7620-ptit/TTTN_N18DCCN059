@@ -4,6 +4,7 @@ import com.source.RESTfulAPI.exception.ApiRequestException;
 import com.source.RESTfulAPI.model.Brand;
 import com.source.RESTfulAPI.repository.BrandRepository;
 import com.source.RESTfulAPI.repository.ProductRepository;
+import com.source.RESTfulAPI.response.ListBrandResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class BrandController {
     @Autowired
     private ProductRepository productRepository;
 
-    public List<Brand> getListBrandByPage(List<Brand> brands, Integer page){
+    public ListBrandResponse getListBrandByPage(List<Brand> brands, Integer page){
 
         int start = 10 * (page - 1);
         int end = (10 * page) > brands.size() ? brands.size(): 10 * page;
@@ -31,20 +32,20 @@ public class BrandController {
             data.add(brands.get(i));
         }
 
-        return data;
+        return new ListBrandResponse(data, data.size()%10==0 ? data.size()/10 : data.size()/10+1);
     }
 
     @GetMapping
-    public ResponseEntity<List<Brand>> getListBrandByPageNumber(@RequestParam Integer page) {
+    public ResponseEntity<ListBrandResponse> getListBrandByPageNumber(@RequestParam Integer page) {
         List<Brand> brands = brandRepository.findAll();
-        List<Brand> data = getListBrandByPage(brands, page);
+        ListBrandResponse data = getListBrandByPage(brands, page);
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<Brand>> getActiveBrand(@RequestParam Integer page) {
+    public ResponseEntity<ListBrandResponse> getActiveBrand(@RequestParam Integer page) {
         List<Brand> brands = brandRepository.findByActive(true);
-        List<Brand> data = getListBrandByPage(brands, page);
+        ListBrandResponse data = getListBrandByPage(brands, page);
         return ResponseEntity.ok(data);
     }
 

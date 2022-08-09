@@ -5,6 +5,7 @@ import com.source.RESTfulAPI.model.Brand;
 import com.source.RESTfulAPI.model.Type;
 import com.source.RESTfulAPI.repository.ProductRepository;
 import com.source.RESTfulAPI.repository.TypeRepository;
+import com.source.RESTfulAPI.response.ListTypeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class TypeController {
     @Autowired
     private ProductRepository productRepository;
 
-    public List<Type> getListTypeByPage(List<Type> types, Integer page){
+    public ListTypeResponse getListTypeByPage(List<Type> types, Integer page){
 
         int start = 10 * (page - 1);
         int end = (10 * page) > types.size() ? types.size(): 10 * page;
@@ -32,21 +33,21 @@ public class TypeController {
             data.add(types.get(i));
         }
 
-        return data;
+        return new ListTypeResponse(data, data.size()%10==0 ? data.size()/10 : data.size()/10+1);
     }
 
     @GetMapping
-    public ResponseEntity<List<Type>> getAllType(@RequestParam Integer page) {
+    public ResponseEntity<ListTypeResponse> getAllType(@RequestParam Integer page) {
         List<Type> types = typeRepository.findAll();
-        List<Type> data = getListTypeByPage(types, page);
-        return ResponseEntity.ok(types);
+        ListTypeResponse data = getListTypeByPage(types, page);
+        return ResponseEntity.ok(data);
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<Type>> getActiveType(@RequestParam Integer page) {
+    public ResponseEntity<ListTypeResponse> getActiveType(@RequestParam Integer page) {
         List<Type> types = typeRepository.findByActive(true);
-        List<Type> data = getListTypeByPage(types, page);
-        return ResponseEntity.ok(types);
+        ListTypeResponse data = getListTypeByPage(types, page);
+        return ResponseEntity.ok(data);
     }
 
     @GetMapping("{id}")
