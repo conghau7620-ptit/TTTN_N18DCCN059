@@ -53,7 +53,7 @@ public class UserController {
             data.add(new UserResponse(users.get(i),image==null?null:image.getUrl()));
         }
 
-        return new ListUserResponse(data, data.size()%10);
+        return new ListUserResponse(data, data.size()/10+1);
     }
 
     @GetMapping
