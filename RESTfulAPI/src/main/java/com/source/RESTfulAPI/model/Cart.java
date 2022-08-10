@@ -18,4 +18,5 @@ public class Cart {
     private Integer customerId;
     private Integer productId;
     private Integer quantity;
+    private Integer amount;
 }

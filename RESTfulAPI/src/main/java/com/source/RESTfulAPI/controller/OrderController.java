@@ -1,13 +1,10 @@
 package com.source.RESTfulAPI.controller;
 
 import com.source.RESTfulAPI.exception.ApiRequestException;
-import com.source.RESTfulAPI.model.OrderDetails;
-import com.source.RESTfulAPI.model.Orders;
-import com.source.RESTfulAPI.model.ParamOrder;
-import com.source.RESTfulAPI.model.Product;
-import com.source.RESTfulAPI.repository.OrderDetailsRepository;
-import com.source.RESTfulAPI.repository.OrderRepository;
-import com.source.RESTfulAPI.repository.ProductRepository;
+import com.source.RESTfulAPI.model.*;
+import com.source.RESTfulAPI.repository.*;
+import com.source.RESTfulAPI.response.OrderDetailsResponse;
+import com.source.RESTfulAPI.response.OrderResponse;
 import com.source.RESTfulAPI.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,42 +21,109 @@ public class OrderController {
 
     @Autowired
     private OrderRepository orderRepository;
-
     @Autowired
     private OrderDetailsRepository orderDetailsRepository;
-
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ImageRepository imageRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+    public Integer getAmount(OrderDetails orderDetail){
+        Product product = productRepository.getById(orderDetail.getProductId());
+
+        return product.getPrice() * orderDetail.getQuantity() * product.getDiscount()/100;
+    }
+
+    public String getStatus(Integer status){
+        switch (status){
+            case 1:{
+                return "pending";
+            }
+            case 2:{
+                return "shipping";
+            }
+            case 3:{
+                return "finished";
+            }
+            default:{
+                return "canceled";
+            }
+        }
+    }
+
+    public Integer getTotal(Orders order){
+        List<OrderDetails> orderDetails = orderDetailsRepository.findByOrderId(order.getId());
+        Integer total =0;
+        for (OrderDetails details : orderDetails){
+            total += details.getAmount();
+        }
+        return total;
+    }
+
+    public OrderResponse getOrderResponse(Orders order){
+        Users customer = userRepository.getById(order.getCustomerId());
+        Users staff = order.getStaffId()==null ? null : userRepository.getById(order.getStaffId());
+
+        return new OrderResponse(
+                order.getId(),
+                order.getCreatedDate(),
+                customer.getName(),
+                order.getOrderPhone(),
+                order.getOrderAddress(),
+                getStatus(order.getStatus()),
+                staff == null ? null : staff.getId(),
+                staff == null ? null : staff.getName(),
+                order.getNote(),
+                order.getTotal()
+        );
+    }
+
+    public OrderDetailsResponse getOrderDetailsResponse(OrderDetails orderDetail){
+        Product product = productRepository.getById(orderDetail.getProductId());
+        Image productImage = imageRepository.findByProductId(product.getId()).get(0);
+        Orders order = orderRepository.getById(orderDetail.getOrderId());
+
+        return new OrderDetailsResponse(
+                product.getName(),
+                productImage.getUrl(),
+                orderDetail.getQuantity(),
+                product.getDiscount(),
+                orderDetail.getAmount(),
+                getStatus(order.getStatus())
+        );
+    }
 
 
     @GetMapping
-    public ResponseEntity<List<ParamOrder>> getAllOrder() {
-        List<ParamOrder> paramOrders = new ArrayList<>();
+    public ResponseEntity<List<OrderResponse>> getAllOrder() {
+        List<OrderResponse> orderResponses = new ArrayList<>();
         List<Orders> orders = orderRepository.findAll();
         for (Orders o : orders) {
-            List<OrderDetails> orderDetails = orderDetailsRepository.findByOrderId(o.getId());
-            paramOrders.add(new ParamOrder(o, orderDetails));
+            orderResponses.add(getOrderResponse(o));
         }
-        return ResponseEntity.ok(paramOrders);
+        return ResponseEntity.ok(orderResponses);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<ParamOrder> getOrderById(@PathVariable Integer id) {
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Integer id) {
         Orders order = orderRepository.findById(id).orElse(null);
         if (order == null) throw new ApiRequestException("Id đơn hàng không tồn tại");
-        List<OrderDetails> orderDetails = orderDetailsRepository.findByOrderId(id);
-        return ResponseEntity.ok(new ParamOrder(order, orderDetails));
+        return ResponseEntity.ok(getOrderResponse(order));
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<ParamOrder>> getOrderByCustomerId(@PathVariable Integer customerId) {
-        List<ParamOrder> paramOrders = new ArrayList<>();
+    public ResponseEntity<List<OrderDetailsResponse>> getOrderByCustomerId(@PathVariable Integer customerId) {
+        List<OrderDetailsResponse> orderDetailsResponses = new ArrayList<>();
         List<Orders> orders = orderRepository.findByCustomerId(customerId);
         for (Orders o : orders) {
             List<OrderDetails> orderDetails = orderDetailsRepository.findByOrderId(o.getId());
-            paramOrders.add(new ParamOrder(o, orderDetails));
+            for (OrderDetails details : orderDetails) {
+                orderDetailsResponses.add(getOrderDetailsResponse(details));
+            }
         }
-        return ResponseEntity.ok(paramOrders);
+        return ResponseEntity.ok(orderDetailsResponses);
     }
 
     public void checkValidField(ParamOrder paramOrder) {
@@ -99,11 +163,11 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<ParamOrder> createOrder(@RequestBody ParamOrder paramOrder) {
-        Orders orders = paramOrder.getOrders();
+        Orders order = paramOrder.getOrders();
         List<OrderDetails> orderDetails = paramOrder.getOrderDetails();
 
-        orders.setCreatedDate(new Date());
-        orders.setStatus(1);
+        order.setCreatedDate(new Date());
+        order.setStatus(1);
 
         checkValidField(paramOrder);
         for (OrderDetails i : orderDetails) {
@@ -112,24 +176,28 @@ public class OrderController {
             }
         }
 
-        orderRepository.save(orders);
-        for (OrderDetails i : orderDetails) {
-            i.setOrderId(orders.getId());
-            orderDetailsRepository.save(i);
+        order.setTotal(getTotal(order));
+
+        orderRepository.save(order);
+        orderRepository.flush();
+        for (OrderDetails details : orderDetails) {
+            details.setOrderId(order.getId());
+            details.setAmount(getAmount(details));
+            orderDetailsRepository.save(details);
         }
 
-        paramOrder.setOrders(orders);
+        paramOrder.setOrders(order);
         paramOrder.setOrderDetails(orderDetails);
         return ResponseEntity.ok(paramOrder);
     }
 
     @PutMapping
     public ResponseEntity<ParamOrder> updateOrder(@RequestBody ParamOrder paramOrder) {
-        Orders orders = paramOrder.getOrders();
+        Orders order = paramOrder.getOrders();
         List<OrderDetails> orderDetails = paramOrder.getOrderDetails();
 
         checkValidField(paramOrder);
-        Orders orderTmp = orderRepository.findById(orders.getId()).orElse(null);
+        Orders orderTmp = orderRepository.findById(order.getId()).orElse(null);
         if (orderTmp == null) {
             throw new ApiRequestException("Id giỏ hàng không tồn tại");
         }
@@ -149,12 +217,14 @@ public class OrderController {
             }
         }
         if (count == orderDetails.size()) {
-            orderRepository.delete(orders);
+            orderRepository.delete(order);
             return ResponseEntity.ok(null);
         }
 
+        order.setTotal(getTotal(order));
+        orderRepository.save(order);
+
         List<OrderDetails> newOrderDetails = new ArrayList<>();
-        orderRepository.save(orders);
         for (OrderDetails i : orderDetails) {
             if (i.getQuantity() != 0) {
                 orderDetailsRepository.save(i);
@@ -162,7 +232,7 @@ public class OrderController {
             }
         }
 
-        paramOrder.setOrders(orders);
+        paramOrder.setOrders(order);
         paramOrder.setOrderDetails(newOrderDetails);
         return ResponseEntity.ok(paramOrder);
     }

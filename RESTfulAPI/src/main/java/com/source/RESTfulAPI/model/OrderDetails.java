@@ -18,4 +18,5 @@ public class OrderDetails {
     private Integer orderId;
     private Integer productId;
     private Integer quantity;
+    private Integer amount;
 }
