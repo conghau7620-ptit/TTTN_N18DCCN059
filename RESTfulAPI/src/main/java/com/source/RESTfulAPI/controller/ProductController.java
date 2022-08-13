@@ -39,7 +39,15 @@ public class ProductController {
     @Autowired
     private ImageRepository imageRepository;
 
-    public ListProductResponse addImageToListProduct(List<Product> products){
+    public Boolean checkActive(Product product){
+        if (product.getActive() && typeRepository.getById(product.getTypeId()).getActive()
+                && brandRepository.getById(product.getBrandId()).getActive()){
+            return true;
+        }
+        return false;
+    }
+
+    public ListProductResponse addImageToListProductAndCheckActive(List<Product> products){
 
         List<ProductResponse> data = new ArrayList<>();
         for (Product p : products) {
@@ -50,6 +58,8 @@ public class ProductController {
                     imageUrls.add(i.getUrl());
                 }
             }
+
+            p.setActive(checkActive(p));
 
             String typeName = typeRepository.getById(p.getTypeId()).getName();
             String brandName = brandRepository.getById(p.getBrandId()).getName();
@@ -62,7 +72,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ListProductResponse> getAllProduct() {
         List<Product> products = productRepository.findAll();
-        ListProductResponse data = addImageToListProduct(products);
+        ListProductResponse data = addImageToListProductAndCheckActive(products);
         return ResponseEntity.ok(data);
     }
 
@@ -79,6 +89,8 @@ public class ProductController {
             }
         }
 
+        product.setActive(checkActive(product));
+
         String typeName = typeRepository.getById(product.getTypeId()).getName();
         String brandName = brandRepository.getById(product.getBrandId()).getName();
 
@@ -89,7 +101,7 @@ public class ProductController {
     public ResponseEntity<ListProductResponse> getProductByBrandId(@RequestParam Integer brandId) {
 
         List<Product> products = productRepository.findByBrandId(brandId);
-        ListProductResponse data = addImageToListProduct(products);
+        ListProductResponse data = addImageToListProductAndCheckActive(products);
         return ResponseEntity.ok(data);
     }
 
@@ -97,7 +109,7 @@ public class ProductController {
     public ResponseEntity<ListProductResponse> getProductByTypeId(@RequestParam Integer typeId){
 
         List<Product> products = productRepository.findByTypeId(typeId);
-        ListProductResponse data = addImageToListProduct(products);
+        ListProductResponse data = addImageToListProductAndCheckActive(products);
         return ResponseEntity.ok(data);
     }
 
@@ -106,14 +118,12 @@ public class ProductController {
         List<Product> products = productRepository.findByActive(true);
         List<Product> activeList = new ArrayList<>();
         for (Product p : products){
-            Brand brand = brandRepository.getById(p.getBrandId());
-            Type type = typeRepository.getById(p.getTypeId());
-            if (brand.getActive() && type.getActive()){
+            if (checkActive(p)){
                 activeList.add(p);
             }
         }
 
-        ListProductResponse data = addImageToListProduct(activeList);
+        ListProductResponse data = addImageToListProductAndCheckActive(activeList);
 
         return ResponseEntity.ok(data);
     }
