@@ -155,7 +155,7 @@ public class ProductController {
                                                  @RequestParam Map<String, String> productParam) throws IOException {
         Product product = new Product();
         product.setName(productParam.get("name"));
-        product.setDescription(productParam.get("Description"));
+        product.setDescription(productParam.get("description"));
         product.setPrice(Integer.parseInt(productParam.get("price")));
         product.setQuantity(Integer.parseInt(productParam.get("quantity")));
         product.setTypeId(Integer.parseInt(productParam.get("typeId")));
