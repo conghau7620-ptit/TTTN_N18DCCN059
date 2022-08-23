@@ -166,7 +166,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<ParamOrder> createOrder(@RequestBody ParamOrder paramOrder) {
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody ParamOrder paramOrder) {
         Orders order = paramOrder.getOrders();
         List<OrderDetails> orderDetails = paramOrder.getOrderDetails();
 
@@ -192,14 +192,13 @@ public class OrderController {
 
         order.setTotal(getTotal(order));
         orderRepository.save(order);
+        orderRepository.flush();
 
-        paramOrder.setOrders(order);
-        paramOrder.setOrderDetails(orderDetails);
-        return ResponseEntity.ok(paramOrder);
+        return ResponseEntity.ok(getOrderResponse(order));
     }
 
     @PutMapping
-    public ResponseEntity<ParamOrder> updateOrder(@RequestBody ParamOrder paramOrder) {
+    public ResponseEntity<OrderResponse> updateOrder(@RequestBody ParamOrder paramOrder) {
         Orders order = paramOrder.getOrders();
         List<OrderDetails> orderDetails = paramOrder.getOrderDetails();
 
@@ -238,10 +237,9 @@ public class OrderController {
 
         order.setTotal(getTotal(order));
         orderRepository.save(order);
+        orderRepository.flush();
 
-        paramOrder.setOrders(order);
-        paramOrder.setOrderDetails(newOrderDetails);
-        return ResponseEntity.ok(paramOrder);
+        return ResponseEntity.ok(getOrderResponse(order));
     }
 
     @PutMapping("/customer/cancel/{id}")
