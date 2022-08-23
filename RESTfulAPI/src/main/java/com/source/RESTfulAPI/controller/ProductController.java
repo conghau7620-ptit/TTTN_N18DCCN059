@@ -1,14 +1,10 @@
 package com.source.RESTfulAPI.controller;
 
 import com.source.RESTfulAPI.exception.ApiRequestException;
-import com.source.RESTfulAPI.model.Brand;
 import com.source.RESTfulAPI.model.Image;
+import com.source.RESTfulAPI.model.OrderDetails;
 import com.source.RESTfulAPI.model.Product;
-import com.source.RESTfulAPI.model.Type;
-import com.source.RESTfulAPI.repository.BrandRepository;
-import com.source.RESTfulAPI.repository.ImageRepository;
-import com.source.RESTfulAPI.repository.ProductRepository;
-import com.source.RESTfulAPI.repository.TypeRepository;
+import com.source.RESTfulAPI.repository.*;
 import com.source.RESTfulAPI.response.ListProductResponse;
 import com.source.RESTfulAPI.response.ProductResponse;
 import com.source.RESTfulAPI.upload.FileUploadUtil;
@@ -19,9 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/product")
@@ -29,15 +23,16 @@ public class ProductController {
 
     @Autowired
     private ProductRepository productRepository;
-
     @Autowired
     private BrandRepository brandRepository;
-
     @Autowired
     private TypeRepository typeRepository;
-
     @Autowired
     private ImageRepository imageRepository;
+    @Autowired
+    private OrderDetailsRepository orderDetailsRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
     public Boolean checkActive(Product product){
         if (product.getActive() && typeRepository.getById(product.getTypeId()).getActive()
@@ -218,5 +213,47 @@ public class ProductController {
         productRepository.delete(product);
 
         return ResponseEntity.ok("Xóa thành công");
+    }
+
+    @GetMapping("/top-product")
+    public ResponseEntity<ListProductResponse> getTopProduct() {
+        List<OrderDetails> orderDetails = orderDetailsRepository.findAll();
+        Map<Integer, Integer> saledProducts = new HashMap<>();
+        for (OrderDetails o : orderDetails){
+            Integer tmp = saledProducts.get(o.getProductId());
+            Integer status = orderRepository.getById(o.getOrderId()).getStatus();
+            if (status==2 || status==3)
+                if (tmp==null){
+                    saledProducts.put(o.getProductId(), o.getQuantity());
+                }
+                else {
+                    saledProducts.put(o.getProductId(), tmp + o.getQuantity());
+                }
+        }
+
+        Map<Integer, Integer> sortedSaledProduct = sortByValue(saledProducts);
+        List<Product> products = new ArrayList<>();
+        int count = 0;
+        for (Integer key: sortedSaledProduct.keySet()){
+            products.add(productRepository.getById(key));
+            count++;
+            if (count==5) break;
+        }
+        ListProductResponse data = addImageToListProductAndCheckActive(products);
+
+        return ResponseEntity.ok(data);
+    }
+
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
+        list.sort(Map.Entry.comparingByValue());
+        Collections.reverse(list);
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
     }
 }
