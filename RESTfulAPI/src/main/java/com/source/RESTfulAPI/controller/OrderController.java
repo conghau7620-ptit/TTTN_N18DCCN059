@@ -40,16 +40,16 @@ public class OrderController {
     public String getStatus(Integer status){
         switch (status){
             case 1:{
-                return "pending";
+                return "đang xử lý";
             }
             case 2:{
-                return "shipping";
+                return "đang giao";
             }
             case 3:{
-                return "finished";
+                return "đã hoàn thành";
             }
             default:{
-                return "canceled";
+                return "đã hủy";
             }
         }
     }
