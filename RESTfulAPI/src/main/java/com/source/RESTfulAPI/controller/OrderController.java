@@ -32,8 +32,9 @@ public class OrderController {
 
     public Integer getAmount(OrderDetails orderDetail){
         Product product = productRepository.getById(orderDetail.getProductId());
+        Integer discount = product.getDiscount() == 0 ? 100 : product.getDiscount();
 
-        return product.getPrice() * orderDetail.getQuantity() * product.getDiscount()/100;
+        return product.getPrice() * orderDetail.getQuantity() * discount/100;
     }
 
     public String getStatus(Integer status){
@@ -66,6 +67,12 @@ public class OrderController {
         Users customer = userRepository.getById(order.getCustomerId());
         Users staff = order.getStaffId()==null ? null : userRepository.getById(order.getStaffId());
 
+        List<OrderDetails> orderDetails = orderDetailsRepository.findByOrderId(order.getId());
+        List<OrderDetailsResponse> orderDetailsResponses = new ArrayList<>();
+        for (OrderDetails details : orderDetails){
+            orderDetailsResponses.add(getOrderDetailsResponse(details));
+        }
+
         return new OrderResponse(
                 order.getId(),
                 order.getCreatedDate(),
@@ -76,7 +83,8 @@ public class OrderController {
                 staff == null ? null : staff.getId(),
                 staff == null ? null : staff.getName(),
                 order.getNote(),
-                order.getTotal()
+                order.getTotal(),
+                orderDetailsResponses
         );
     }
 
@@ -90,8 +98,7 @@ public class OrderController {
                 productImage.getUrl(),
                 orderDetail.getQuantity(),
                 product.getDiscount(),
-                orderDetail.getAmount(),
-                getStatus(order.getStatus())
+                orderDetail.getAmount()
         );
     }
 
@@ -176,7 +183,7 @@ public class OrderController {
             }
         }
 
-        order.setTotal(getTotal(order));
+        order.setTotal(0);
 
         orderRepository.save(order);
         orderRepository.flush();
@@ -185,6 +192,9 @@ public class OrderController {
             details.setAmount(getAmount(details));
             orderDetailsRepository.save(details);
         }
+
+        order.setTotal(getTotal(order));
+        orderRepository.save(order);
 
         paramOrder.setOrders(order);
         paramOrder.setOrderDetails(orderDetails);
@@ -221,9 +231,6 @@ public class OrderController {
             return ResponseEntity.ok(null);
         }
 
-        order.setTotal(getTotal(order));
-        orderRepository.save(order);
-
         List<OrderDetails> newOrderDetails = new ArrayList<>();
         for (OrderDetails i : orderDetails) {
             if (i.getQuantity() != 0) {
@@ -231,6 +238,9 @@ public class OrderController {
                 newOrderDetails.add(i);
             }
         }
+
+        order.setTotal(getTotal(order));
+        orderRepository.save(order);
 
         paramOrder.setOrders(order);
         paramOrder.setOrderDetails(newOrderDetails);

@@ -15,5 +15,4 @@ public class OrderDetailsResponse {
     private Integer quantity;
     private Integer productDiscount;
     private Integer amount;
-    private String status;
 }

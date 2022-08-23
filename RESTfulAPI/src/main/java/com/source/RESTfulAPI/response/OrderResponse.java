@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Setter
 @Getter
@@ -22,4 +23,5 @@ public class OrderResponse {
     private String staffName;
     private String note;
     private Integer total;
+    private List<OrderDetailsResponse> orderDetailsResponses;
 }
