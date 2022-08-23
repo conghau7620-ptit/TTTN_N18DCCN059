@@ -121,16 +121,13 @@ public class OrderController {
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<OrderDetailsResponse>> getOrderByCustomerId(@PathVariable Integer customerId) {
-        List<OrderDetailsResponse> orderDetailsResponses = new ArrayList<>();
+    public ResponseEntity<List<OrderResponse>> getOrderByCustomerId(@PathVariable Integer customerId) {
+        List<OrderResponse> orderResponses = new ArrayList<>();
         List<Orders> orders = orderRepository.findByCustomerId(customerId);
         for (Orders o : orders) {
-            List<OrderDetails> orderDetails = orderDetailsRepository.findByOrderId(o.getId());
-            for (OrderDetails details : orderDetails) {
-                orderDetailsResponses.add(getOrderDetailsResponse(details));
-            }
+            orderResponses.add(getOrderResponse(o));
         }
-        return ResponseEntity.ok(orderDetailsResponses);
+        return ResponseEntity.ok(orderResponses);
     }
 
     public void checkValidField(ParamOrder paramOrder) {
