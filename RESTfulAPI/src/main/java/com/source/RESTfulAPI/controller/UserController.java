@@ -21,7 +21,6 @@ import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -140,6 +139,43 @@ public class UserController {
         user.setEmail(userParam.get("email"));
         user.setPhone(userParam.get("phone"));
         user.setRoleId(Integer.parseInt(userParam.get("roleId")));
+        user.setCreatedDate(new Date());
+        user.setActive(true);
+
+        checkValidField(user);
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new ApiRequestException("Username đã tồn tại");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        userRepository.save(user);
+        userRepository.flush();
+
+        //add image
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String uploadDir = "Images/User/" + user.getId();
+        FileUploadUtil.saveFile(uploadDir, fileName, file);
+
+        Image image = new Image();
+        image.setUserId(user.getId());
+        image.setUrl("http://localhost:8080/api/image/user?userId=" + user.getId() + "&name="+ fileName);
+        imageRepository.save(image);
+
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Users> register(@RequestParam(value = "file", required = false) MultipartFile file,
+                                            @RequestParam Map<String, String> userParam) throws IOException {
+        Users user = new Users();
+
+        user.setUsername(userParam.get("username"));
+        user.setPassword(userParam.get("password"));
+        user.setName(userParam.get("name"));
+        user.setAddress(userParam.get("address"));
+        user.setEmail(userParam.get("email"));
+        user.setPhone(userParam.get("phone"));
+        user.setRoleId(3);
         user.setCreatedDate(new Date());
         user.setActive(true);
 
