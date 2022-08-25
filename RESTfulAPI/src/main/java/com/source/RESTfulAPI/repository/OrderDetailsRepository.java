@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface OrderDetailsRepository extends JpaRepository<OrderDetails, Integer> {
     List<OrderDetails> findByOrderId(Integer orderId);
+
+    List<OrderDetails> getByProductId(Integer productId);
 }

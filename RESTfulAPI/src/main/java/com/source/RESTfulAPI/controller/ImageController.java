@@ -51,4 +51,10 @@ public class ImageController {
 
         return ResponseEntity.ok("localhost:8080/api/image/product?productId=" + productId + "&name="+ name);
     }
+
+    @GetMapping("/feedback")
+    public byte[] getFeedbackImage(@RequestParam Integer feedbackId, @RequestParam String name) throws Exception {
+
+        return Files.readAllBytes(Paths.get("Images/Feedback/" + feedbackId + "/" + name));
+    }
 }
