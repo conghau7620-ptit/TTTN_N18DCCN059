@@ -189,13 +189,9 @@ public class UserController {
         userRepository.flush();
 
         //add image
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        String uploadDir = "Images/User/" + user.getId();
-        FileUploadUtil.saveFile(uploadDir, fileName, file);
-
         Image image = new Image();
         image.setUserId(user.getId());
-        image.setUrl("http://localhost:8080/api/image/user?userId=" + user.getId() + "&name="+ fileName);
+        image.setUrl("http://localhost:8080/api/image/user?userId=0&name=default.jpg");
         imageRepository.save(image);
 
         return ResponseEntity.ok(user);

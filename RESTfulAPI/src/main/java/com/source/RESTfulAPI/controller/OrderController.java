@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/order")
@@ -110,6 +107,7 @@ public class OrderController {
         for (Orders o : orders) {
             orderResponses.add(getOrderResponse(o));
         }
+        Collections.reverse(orderResponses);
         return ResponseEntity.ok(orderResponses);
     }
 
@@ -127,6 +125,7 @@ public class OrderController {
         for (Orders o : orders) {
             orderResponses.add(getOrderResponse(o));
         }
+        Collections.reverse(orderResponses);
         return ResponseEntity.ok(orderResponses);
     }
 
