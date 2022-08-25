@@ -165,8 +165,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Users> register(@RequestParam(value = "file", required = false) MultipartFile file,
-                                            @RequestParam Map<String, String> userParam) throws IOException {
+    public ResponseEntity<Users> register(@RequestParam Map<String, String> userParam) throws IOException {
         Users user = new Users();
 
         user.setUsername(userParam.get("username"));
