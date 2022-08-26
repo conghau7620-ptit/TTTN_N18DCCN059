@@ -31,7 +31,7 @@ public class ImageController {
                                                   @RequestParam Integer userId, @RequestParam String name) throws IOException {
         String uploadDir = "Images/User/" + userId;
         FileUploadUtil.saveFile(uploadDir, name, file);
-        String url = "localhost:8080/api/image/user?userId=" + userId + "&name="+ name;
+        String url = "http://localhost:8080/api/image/user?userId=" + userId + "&name="+ name;
         Image image = imageRepository.findByUserId(userId);
         image.setUrl(url);
         imageRepository.save(image);
@@ -51,6 +51,6 @@ public class ImageController {
         String uploadDir = "Images/Product/" + productId;
         FileUploadUtil.saveFile(uploadDir, name, file);
 
-        return ResponseEntity.ok("localhost:8080/api/image/product?productId=" + productId + "&name="+ name);
+        return ResponseEntity.ok("http://localhost:8080/api/image/product?productId=" + productId + "&name="+ name);
     }
 }
