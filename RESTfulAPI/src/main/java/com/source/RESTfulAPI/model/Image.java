@@ -19,6 +19,5 @@ public class Image {
     private String url;
     private Integer userId;
     private Integer productId;
-    private Integer feedbackId;
 
 }

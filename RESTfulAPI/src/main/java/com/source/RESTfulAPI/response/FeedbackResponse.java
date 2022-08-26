@@ -16,5 +16,5 @@ public class FeedbackResponse {
     private String customerName;
     private Date createdDate;
     private String detail;
-    private List<String> imageUrls;
+    private Integer vote;
 }

@@ -20,6 +20,7 @@ public class Feedback {
 
     private Integer orderDetailsId;
     private String detail;
+    private Integer vote;
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")

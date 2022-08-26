@@ -5,12 +5,9 @@ import com.source.RESTfulAPI.model.*;
 import com.source.RESTfulAPI.repository.*;
 import com.source.RESTfulAPI.response.FeedbackResponse;
 import com.source.RESTfulAPI.response.ListFeedbackResponse;
-import com.source.RESTfulAPI.upload.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
@@ -32,14 +29,16 @@ public class FeedbackController {
     private UserRepository userRepository;
 
     @PostMapping
-    public ResponseEntity<Feedback> createFeedback(@RequestParam(value = "files", required = false) List<MultipartFile> files,
-                                                   @RequestParam Map<String, String> feedbackParam) throws IOException {
+    public ResponseEntity<Feedback> createFeedback(@RequestParam Map<String, String> feedbackParam) throws IOException {
         Integer orderDetailsId = Integer.parseInt(feedbackParam.get("orderDetailsId"));
         String detail = feedbackParam.get("detail");
+        Integer vote = Integer.parseInt(feedbackParam.get("vote"));
 
         Feedback feedback = new Feedback();
         feedback.setOrderDetailsId(orderDetailsId);
         feedback.setDetail(detail);
+        feedback.setVote(vote);
+
         feedback.setCreatedDate(new Date());
 
         OrderDetails orderDetail = orderDetailsRepository.getById(orderDetailsId);
@@ -63,34 +62,12 @@ public class FeedbackController {
         feedbackRepository.save(feedback);
         feedbackRepository.flush();
 
-        //add image
-        List<String> imageUrls = new ArrayList<>();
-        for (MultipartFile file : files){
-            String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-            String uploadDir = "Images/Feedback/" + feedback.getId();
-            FileUploadUtil.saveFile(uploadDir, fileName, file);
-
-            Image image = new Image();
-            image.setFeedbackId(feedback.getId());
-            image.setUrl("http://localhost:8080/api/image/feedback?feedbackId=" + feedback.getId() + "&name="+ fileName);
-            imageRepository.save(image);
-
-            imageUrls.add(image.getUrl());
-        }
-
         return ResponseEntity.ok(feedback);
     }
 
-    public ListFeedbackResponse addImageToListFeedBack(List<Feedback> feedbacks){
+    public ListFeedbackResponse createListFeedback(List<Feedback> feedbacks){
         List<FeedbackResponse> data = new ArrayList<>();
         for (Feedback fb : feedbacks){
-            List<Image> images = imageRepository.findByFeedbackId(fb.getId());
-            List<String> imageUrls = new ArrayList<>();
-            if (images!=null){
-                for (Image img : images){
-                    imageUrls.add(img.getUrl());
-                }
-            }
             OrderDetails orderDetail = orderDetailsRepository.getById(fb.getOrderDetailsId());
             Orders order = orderRepository.getById(orderDetail.getOrderId());
             Users user = userRepository.getById(order.getCustomerId());
@@ -99,7 +76,7 @@ public class FeedbackController {
                     user.getName(),
                     fb.getCreatedDate(),
                     fb.getDetail(),
-                    imageUrls
+                    fb.getVote()
             ));
         }
         Collections.reverse(data);
@@ -116,7 +93,7 @@ public class FeedbackController {
                 feedbacks.add(feedback);
             }
         }
-        ListFeedbackResponse data = addImageToListFeedBack(feedbacks);
+        ListFeedbackResponse data = createListFeedback(feedbacks);
         return ResponseEntity.ok(data);
     }
 }

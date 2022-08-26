@@ -26,6 +26,7 @@ public class OrderController {
     private ImageRepository imageRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired FeedbackRepository feedbackRepository;
 
     public Integer getAmount(OrderDetails orderDetail){
         Product product = productRepository.getById(orderDetail.getProductId());
@@ -90,12 +91,19 @@ public class OrderController {
         Image productImage = imageRepository.findByProductId(product.getId()).get(0);
         Orders order = orderRepository.getById(orderDetail.getOrderId());
 
+
+        Boolean isFeedback = false;
+        if (feedbackRepository.getByOrderDetailsId(orderDetail.getId())!=null){
+            isFeedback = true;
+        }
+
         return new OrderDetailsResponse(
                 product.getName(),
                 productImage.getUrl(),
                 orderDetail.getQuantity(),
                 product.getDiscount(),
-                orderDetail.getAmount()
+                orderDetail.getAmount(),
+                isFeedback
         );
     }
 

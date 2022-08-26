@@ -15,4 +15,5 @@ public class OrderDetailsResponse {
     private Integer quantity;
     private Integer productDiscount;
     private Integer amount;
+    private Boolean isFeedback;
 }
