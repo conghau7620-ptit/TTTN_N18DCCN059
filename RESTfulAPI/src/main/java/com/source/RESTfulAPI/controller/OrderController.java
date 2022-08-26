@@ -98,6 +98,7 @@ public class OrderController {
         }
 
         return new OrderDetailsResponse(
+                orderDetail.getId(),
                 product.getName(),
                 productImage.getUrl(),
                 orderDetail.getQuantity(),

@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderDetailsResponse {
+    private Integer id;
     private String productName;
     private String productImage;
     private Integer quantity;
