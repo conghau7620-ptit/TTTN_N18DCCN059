@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class FeedbackResponse {
     private String customerName;
+    private String customerImage;
     private Date createdDate;
     private String detail;
     private Integer vote;

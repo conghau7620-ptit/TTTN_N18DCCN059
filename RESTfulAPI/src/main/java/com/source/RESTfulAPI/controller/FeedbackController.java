@@ -71,9 +71,11 @@ public class FeedbackController {
             OrderDetails orderDetail = orderDetailsRepository.getById(fb.getOrderDetailsId());
             Orders order = orderRepository.getById(orderDetail.getOrderId());
             Users user = userRepository.getById(order.getCustomerId());
+            Image userImage = imageRepository.findByUserId(user.getId());
 
             data.add(new FeedbackResponse(
                     user.getName(),
+                    userImage.getUrl(),
                     fb.getCreatedDate(),
                     fb.getDetail(),
                     fb.getVote()
