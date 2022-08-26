@@ -1,15 +1,13 @@
 package com.source.RESTfulAPI.controller;
 
+import com.source.RESTfulAPI.model.Image;
+import com.source.RESTfulAPI.repository.ImageRepository;
 import com.source.RESTfulAPI.upload.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.activation.FileTypeMap;
-import javax.servlet.ServletContext;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,7 +18,7 @@ import java.nio.file.Paths;
 public class ImageController {
 
     @Autowired
-    private ServletContext context;
+    private ImageRepository imageRepository;
 
     @GetMapping("/user")
     public byte[] getUserImage(@RequestParam Integer userId, @RequestParam String name) throws Exception {
@@ -33,8 +31,12 @@ public class ImageController {
                                                   @RequestParam Integer userId, @RequestParam String name) throws IOException {
         String uploadDir = "Images/User/" + userId;
         FileUploadUtil.saveFile(uploadDir, name, file);
+        String url = "localhost:8080/api/image/user?userId=" + userId + "&name="+ name;
+        Image image = imageRepository.findByUserId(userId);
+        image.setUrl(url);
+        imageRepository.save(image);
 
-        return ResponseEntity.ok("localhost:8080/api/image/user?userId=" + userId + "&name="+ name);
+        return ResponseEntity.ok(url);
     }
 
     @GetMapping("/product")
